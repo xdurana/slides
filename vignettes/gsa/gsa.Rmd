@@ -1,0 +1,481 @@
+---
+title: Pathway analysis of lung cancer associated variants 
+subtitle:
+author: |
+  | Xavier Duran, Iván Galván
+  | GCAT Genomes for Life
+  | Institut de Recerca Germans Trias i Pujol (IGTP)
+date: |
+  | HealthForecast
+  | December 13^th^ 2016
+header-includes:
+output:
+  beamer_presentation:
+    theme: "gcat"
+    incremental: no
+    keep_tex: yes
+    fig_caption: false
+    dev: png
+    slide_level: 2
+    toc: no
+---
+
+## Gene Set Analysis (GSA)
+### Overrepresentation analysis
+
+Given a list of genes, are any of the pathways (Gene Ontologies) *surprisingly* enriched in that list?
+
+How? Calculating p-value with a simple hypergeometric distribution
+
+||Significant genes|Non-significant genes|Total|
+|--------------|-------|---|---|
+|genes in the group|k|K-k|K|
+|other genes|n-k|N-K-n+k|N-K|
+|total|n|N-n|N|
+
+$$P(X=k) = \frac{\binom{K}{k}\binom{N-K}{n-k}}{\binom{N}{n}}$$
+
+## From variants to genes
+### Variant list
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+library(dplyr)
+library(xtable)
+
+directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+snp_dat_read <- read.csv(file.path(directory, 'output/lung/snp_dat.csv'), header = TRUE) %>%
+  arrange(desc(scaled_coefficients))
+
+options(xtable.comment = FALSE)
+print(xtable(snp_dat_read[1:20,], auto = TRUE, caption="Variant list"), scalebox = 0.5, include.rownames=FALSE)
+
+```
+
+## From variants to genes
+
+\begin{figure}[v]
+  \mbox{\includegraphics[height=.5in]{images/ensembl_protists_logo.png}}
+\end{figure}
+
+One of several well known browsers for the retrieval of annotated genomic information.
+
+#### Assembly GRCh37 (hg19)
+
+- cut chromosome into pieces
+- sequence those pieces
+- put them together
+
+## From variants to genes
+### Chromosome 12
+
+\begin{figure}[v]
+  \mbox{\includegraphics[height=.5in]{images/Human_1211000.png}}
+\end{figure}
+
+|||
+|--------------|-------:|
+|Length (bps)|	133,851,895|
+|Coding genes|	1,071|
+|Non coding gene count|	1,131|
+|Pseudogenes|	616|
+|Short Variants|	6,980,191|
+
+## From variants to genes
+### Region of gene KSR2
+
+\begin{figure}[v]
+  \mbox{\includegraphics[]{images/Human_12117890817118406788.png}}
+\end{figure}
+
+\begin{figure}[v]
+  \mbox{\includegraphics[]{images/Human_KSR2.png}}
+\end{figure}
+
+## From variants to genes
+### Seq2pathway
+
+Seq2pathway is an R/Python wrapper for pathway (or functional gene-set) analysis of genomic loci, adapted for advances in genome research.
+
+\begin{figure}[v]
+  \mbox{\includegraphics[height=1.5in]{images/seq2gene.png}}
+  \caption{seq2gene workflow}\label{fig:conversion}
+\end{figure}
+
+## From variants to genes
+### Code
+
+```{r eval=FALSE}
+
+  gene_dat <- runseq2gene(
+    inputfile = snp_dat,
+    genome = "hg19",
+    adjacent = TRUE,
+    SNP = TRUE,
+    search_radius = 150000,
+    PromoterStop = FALSE,
+    NearestTwoDirection = TRUE
+  )
+
+```
+
+## From variants to genes
+### Variants and nearby genes
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+library(dplyr)
+library(xtable)
+
+directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+genes <- read.csv2(file.path(directory, 'output/lung/genes_hf.csv'), header = TRUE, sep = ';', stringsAsFactors = FALSE) %>%
+  select(
+    name,
+    chrom,
+    chromStart,
+    chromEnd,
+    type,
+    gene_name,
+    source
+  )
+
+hf_genes_ids <- genes$gene_name %>%
+  unique()
+
+options(xtable.comment = FALSE)
+print(xtable(genes[sample(1:nrow(genes), 20),], auto = TRUE, caption="Variant annotation list"), scalebox = 0.5, include.rownames=FALSE)
+
+```
+
+## From variants to genes
+### Gene list
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+library(dplyr)
+library(xtable)
+
+directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+gene_list <- read.csv2(file.path(directory, 'output/lung/gene_hf_list.csv'), header = TRUE, sep = ';') %>%
+  arrange(desc(Freq)) %>%
+  rename(
+    gene=Var1,
+    frequency=Freq
+  )
+
+options(xtable.comment = FALSE)
+print(xtable(gene_list[1:20,], auto = TRUE, caption="Gene frequency list"), scalebox = 0.5, include.rownames=FALSE)
+
+```
+
+## From variants to genes
+### Sets intersection
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+library(Vennerable)
+
+  directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+
+  genes_gcat <- read.csv2(file.path(directory, 'output/lung/gene_gcat_list.csv'), stringsAsFactors = FALSE)
+  genes_hf <- read.csv2(file.path(directory, 'output/lung/gene_hf_list.csv'), stringsAsFactors = FALSE)
+  genes_hf_filtered <- read.csv2(file.path(directory, 'output/lung/gene_hf_filtered_list.csv'), stringsAsFactors = FALSE)
+  gwas_genes_ids <- read.csv2(file.path(directory, 'output/lung/gwas_catalog_lung_genes.csv'), stringsAsFactors = FALSE)
+  
+  vlung <- Venn(
+    SetNames = c("PLINK", "HF", "GWAS Catalog"),
+    list(
+      genes_gcat$Var1,
+      genes_hf$Var1,
+      gwas_genes_ids$x
+    )
+  )
+  
+  a_111 <- paste(vlung@IntersectionSets$`111`, collapse = ' ')
+  a_110 <- paste(vlung@IntersectionSets$`110`, collapse = ' ')
+  a_011 <- paste(vlung@IntersectionSets$`011`, collapse = ' ')
+  
+  plot(vlung, doWeights = TRUE)
+```
+
+## From variants to genes
+### Sets intersection
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+library(Vennerable)
+
+  directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+
+  genes_gcat <- read.csv2(file.path(directory, 'output/lung/gene_gcat_list.csv'), stringsAsFactors = FALSE)
+  genes_hf <- read.csv2(file.path(directory, 'output/lung/gene_hf_list.csv'), stringsAsFactors = FALSE)
+  genes_hf_filtered <- read.csv2(file.path(directory, 'output/lung/gene_hf_filtered_list.csv'), stringsAsFactors = FALSE)
+  gwas_genes_ids <- read.csv2(file.path(directory, 'output/lung/gwas_catalog_lung_genes.csv'), stringsAsFactors = FALSE)
+  
+  vlung <- Venn(
+    SetNames = c("PLINK", "HF", "GWAS Catalog"),
+    list(
+      genes_gcat$Var1,
+      genes_hf_filtered$Var1,
+      gwas_genes_ids$x
+    )
+  )
+  
+  a_111 <- paste(vlung@IntersectionSets$`111`, collapse = ' ')
+  a_110 <- paste(vlung@IntersectionSets$`110`, collapse = ' ')
+  a_011 <- paste(vlung@IntersectionSets$`011`, collapse = ' ')
+  
+  plot(vlung, doWeights = TRUE)
+```
+
+<!-- not included
+## From variants to genes
+### Sets intersection
+ -->
+
+```{r, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE, results='asis'}
+
+library(Vennerable)
+
+  directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+
+  genes_gcat <- read.csv2(file.path(directory, 'output/lung/gene_gcat_list_10_5.csv'), stringsAsFactors = FALSE)
+  genes_hf <- read.csv2(file.path(directory, 'output/lung/gene_hf_list.csv'), stringsAsFactors = FALSE)
+  genes_hf_filtered <- read.csv2(file.path(directory, 'output/lung/gene_hf_filtered_list.csv'), stringsAsFactors = FALSE)
+  gwas_genes_ids <- read.csv2(file.path(directory, 'output/lung/gwas_catalog_lung_genes.csv'), stringsAsFactors = FALSE)
+  
+  vlung <- Venn(
+    SetNames = c("PLINK p<10^-5", "HF", "GWAS Catalog"),
+    list(
+      genes_gcat$Var1,
+      genes_hf_filtered$Var1,
+      gwas_genes_ids$x
+    )
+  )
+  
+  a_111 <- paste(vlung@IntersectionSets$`111`, collapse = ' ')
+  a_110 <- paste(vlung@IntersectionSets$`110`, collapse = ' ')
+  a_011 <- paste(vlung@IntersectionSets$`011`, collapse = ' ')
+  
+  plot(vlung, doWeights = TRUE)
+```
+
+## From genes to pathways
+### Reactome
+
+Reactome is a free, open-source, curated and peer reviewed pathway database
+
+\begin{figure}[v]
+  \mbox{\includegraphics[height=.5in]{images/reactome.jpg}}
+\end{figure}
+
+|||
+|--------------|-------|
+|UniProt|proteins|
+|Ch EBI|small molecules|
+|Ensembl|genes and transcripts|
+|RNA Central|ncRNAs|
+|PubMed|literature evidence|
+|Gene Ontology (GO)|molecular function, biological process|
+
+## From genes to pathways
+### Health Forecast selected variants
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+  library(dplyr)
+
+  directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+  reactome_hf <- read.csv2(file.path(directory, 'output/lung/reactome_hf.csv'), stringsAsFactors = FALSE, sep = ',') %>%
+    select(
+      Pathway.identifier,
+      Pathway.name,
+      Entities.pValue,
+      Submitted.entities.found
+    )
+  
+  options(xtable.comment = FALSE)
+  print(xtable(reactome_hf[1:20,], auto = TRUE, caption="Pathway analysis with HF variants", tabular.environment="longtable"), scalebox = 0.3, include.rownames=FALSE)
+  
+```
+
+## From genes to pathways
+### PLINK & HF
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+  library(dplyr)
+
+  directory <- '/home/labs/dnalab/share/lims/R/health-forecast'
+  reactome_hf <- read.csv2(file.path(directory, 'output/lung/reactome_hf_filtered.csv'), stringsAsFactors = FALSE, sep = ',') %>%
+    select(
+      Pathway.identifier,
+      Pathway.name,
+      Entities.pValue,
+      Submitted.entities.found
+    )
+  
+  options(xtable.comment = FALSE)
+  print(xtable(reactome_hf[1:10,], auto = TRUE, caption="Pathway analysis with HF variants, stability > 5"), scalebox = 0.4, include.rownames=FALSE, latex.environments="flushleft")
+  
+  reactome_hf <- read.csv2(file.path(directory, 'output/lung/reactome_gcat.csv'), stringsAsFactors = FALSE, sep = ',') %>%
+    select(
+      Pathway.identifier,
+      Pathway.name,
+      Entities.pValue,
+      Submitted.entities.found
+    )
+  
+  options(xtable.comment = FALSE)
+  print(xtable(reactome_hf[1:10,], auto = TRUE, caption="Pathway analysis with PLINK variants"), scalebox = 0.4, include.rownames=FALSE, latex.environments="flushleft")
+  
+```
+
+## From genes to pathways
+### Signaling by high-kinase activity BRAF mutants
+
+\begin{figure}[v]
+  \mbox{\includegraphics[]{images/DiagramImage (4).png}}
+\end{figure}
+
+## From genes to pathways
+### Signaling by high-kinase activity BRAF mutants
+
+\begin{figure}[v]
+  \mbox{\includegraphics[]{images/DiagramImage (6).png}}
+\end{figure}
+
+## From genes to pathways
+### Curve ROC analysis for the top pathway
+
+
+\tiny{
+\begin{table}[ht]
+\centering
+\begin{tabular}{rllr}
+  \hline
+ & name & gene\_name & p-value \\ 
+  \hline
+1 & 12:25371462:C:T & KRAS & 0.033332600 \\ 
+  2 & 12:25409506:G:A & KRAS & 0.002104760 \\ 
+  3 & 12:25528516:A:AT & KRAS & 0.001517350 \\ 
+  4 & 12:25560773:GA:G & KRAS & 0.201970000 \\ 
+  5 & 12:118309635:A:AT & KSR2 & 0.028058900 \\ 
+  6 & 12:118387112:G:GA & KSR2 & 0.078734500 \\ 
+  7 & 12:118396478:C:T & KSR2 & 0.015582300 \\ 
+  8 & rs7972611 & KSR2 & 0.056434400 \\ 
+  9 & rs7977174 & KSR2 & 0.000350504 \\ 
+  10 & 12:6087041:C:A & VWF & 0.003123620 \\ 
+  11 & 12:6272372:T:C & VWF & 0.060201300 \\ 
+   \hline
+\end{tabular}
+\caption{Selected SNPs for the ROC curve analysis after LD filter applied}
+
+\end{table}
+}
+
+
+
+## From genes to pathways
+### Curve ROC analysis for the top pathway
+
+
+\begin{columns}
+\begin{column}{0.7\textwidth}
+\tiny{
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & z value & Pr($>$$|$z$|$) \\ 
+  \hline
+(Intercept) & -4.1111 & 1.5217 & -2.70 & 0.0069 \\ 
+  ECOG1 & -0.4369 & 0.6291 & -0.69 & 0.4874 \\ 
+  ECOG2 & -15.3020 & 4406.4471 & -0.00 & 0.9972 \\ 
+  fumador2 & -15.2612 & 1823.9592 & -0.01 & 0.9933 \\ 
+  histologia2 & 1.7499 & 0.6621 & 2.64 & 0.0082 \\ 
+  histologia3 & -16.2795 & 2307.7481 & -0.01 & 0.9944 \\ 
+  histologia4 & 2.2762 & 1.0550 & 2.16 & 0.0310 \\ 
+  tractament2 & -1.3213 & 0.7536 & -1.75 & 0.0796 \\ 
+  tractament3 & -1.9501 & 1.3699 & -1.42 & 0.1546 \\ 
+  sex2 & -0.4411 & 0.7996 & -0.55 & 0.5812 \\ 
+  12:6087041:C:A & 1.2234 & 0.4368 & 2.80 & 0.0051 \\ 
+  12:6272372:T:C & 0.5293 & 0.3847 & 1.38 & 0.1689 \\ 
+  12:25371462:C:T & 0.8230 & 0.4414 & 1.86 & 0.0622 \\ 
+  12:25409506:G:A & -1.1204 & 0.5417 & -2.07 & 0.0386 \\ 
+  12:25528516:A:AT & 0.9936 & 0.4680 & 2.12 & 0.0337 \\ 
+  12:25560773:GA:G & -0.2570 & 0.4595 & -0.56 & 0.5760 \\ 
+  rs7977174 & 1.2235 & 0.4492 & 2.72 & 0.0065 \\ 
+  rs7972611 & -0.4810 & 0.4364 & -1.10 & 0.2704 \\ 
+  12:118309635:A:AT & -1.1496 & 0.4273 & -2.69 & 0.0071 \\ 
+  12:118387112:G:GA & -0.6293 & 0.4730 & -1.33 & 0.1834 \\ 
+  12:118396478:C:T & 1.2912 & 0.4460 & 2.90 & 0.0038 \\ 
+   \hline
+\end{tabular}
+\caption{Model 1: Logistic model with clinical variables + SNPs}
+
+\end{table}}
+
+
+
+\end{column}
+\begin{column}{0.3\textwidth}
+
+
+\begin{figure}[v]
+  \mbox{\includegraphics[height=1.5in]{images/roc1.png}}
+  \caption{ROC curve model 1 (AUC = 0.92)}
+\end{figure}
+
+
+
+\end{column}
+\end{columns}
+
+
+## From genes to pathways
+### Curve ROC analysis for the top pathway
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\tiny{
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrr}
+  \hline
+ & Estimate & Std. Error & z value & Pr(>|z|) \\ 
+  \hline
+(Intercept) & -1.1923 & 0.3985 & -2.99 & 0.0028 \\ 
+  sex2 & -0.5842 & 0.5731 & -1.02 & 0.3080 \\ 
+  ECOG1 & -0.2326 & 0.4097 & -0.57 & 0.5702 \\ 
+  ECOG2 & -16.3738 & 2797.4420 & -0.01 & 0.9953 \\ 
+  fumador2 & -15.9061 & 1224.6130 & -0.01 & 0.9896 \\ 
+  tractament2 & -0.4486 & 0.4716 & -0.95 & 0.3414 \\ 
+  tractament3 & 0.0126 & 0.7348 & 0.02 & 0.9863 \\ 
+  histologia2 & 0.7955 & 0.4094 & 1.94 & 0.0520 \\ 
+  histologia3 & -16.0734 & 1599.1012 & -0.01 & 0.9920 \\ 
+  histologia4 & 1.8973 & 0.7537 & 2.52 & 0.0118 \\ 
+   \hline
+\end{tabular}
+\caption{Model 2: Logistic model with clinical variables}
+\end{table}}
+
+
+\end{column}
+\begin{column}{0.5\textwidth}
+
+\begin{figure}[v]
+  \mbox{\includegraphics[height=1.5in]{images/roc2.png}}
+  \caption{ROC curve model 2 (AUC=0.71)}
+\end{figure}
+
+\end{column}
+\end{columns}
+
+## Summary
+
+The functional analysis is incomplete and unreliable because only chromosome 12 has been analyzed
+
+More restrictive signification threshold led to known associated biological processes to lung cancer
+
+Less restrictive ones let other biological processes (like keratinization) come to the surface

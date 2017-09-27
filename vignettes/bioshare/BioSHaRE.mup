@@ -1,0 +1,252 @@
+{
+  "title": "GCAT & BioSHaRE",
+  "id": 1,
+  "formatVersion": 2,
+  "ideas": {
+    "2": {
+      "title": "GCAT",
+      "id": 51,
+      "ideas": {
+        "1": {
+          "title": "Data dictionary",
+          "id": 7,
+          "ideas": {
+            "2": {
+              "title": "Definition",
+              "id": 11,
+              "ideas": {
+                "6": {
+                  "title": "Variable normalization",
+                  "id": 22,
+                  "ideas": {
+                    "1": {
+                      "title": "Names",
+                      "id": 21,
+                      "ideas": {
+                        "1": {
+                          "title": "Confounding",
+                          "id": 12,
+                          "attr": {
+                            "style": {}
+                          }
+                        },
+                        "2": {
+                          "title": "English",
+                          "id": 14,
+                          "attr": {
+                            "style": {}
+                          }
+                        }
+                      },
+                      "attr": {
+                        "style": {}
+                      }
+                    },
+                    "2": {
+                      "title": "NA",
+                      "id": 19,
+                      "attr": {
+                        "style": {}
+                      }
+                    },
+                    "1.5": {
+                      "title": "Recode factors",
+                      "id": 17,
+                      "attr": {
+                        "style": {}
+                      }
+                    },
+                    "1.75": {
+                      "title": "Merge variables",
+                      "id": 30,
+                      "attr": {
+                        "style": {}
+                      }
+                    }
+                  },
+                  "attr": {
+                    "style": {}
+                  }
+                },
+                "16": {
+                  "title": "Dictionary",
+                  "id": 28,
+                  "attr": {
+                    "style": {}
+                  },
+                  "ideas": {
+                    "1": {
+                      "title": "Opal",
+                      "id": 33,
+                      "attr": {
+                        "style": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "attr": {
+                "style": {}
+              }
+            },
+            "3": {
+              "title": "Classification",
+              "id": 24,
+              "ideas": {
+                "1": {
+                  "title": "Mica",
+                  "id": 4,
+                  "attr": {
+                    "style": {}
+                  }
+                },
+                "2": {
+                  "title": "Other ontologies",
+                  "id": 27,
+                  "attr": {
+                    "style": {}
+                  }
+                }
+              },
+              "attr": {
+                "style": {}
+              }
+            }
+          },
+          "attr": {
+            "style": {}
+          }
+        }
+      },
+      "attr": {
+        "style": {}
+      }
+    },
+    "-2": {
+      "title": "BioSHaRE",
+      "id": 39,
+      "ideas": {
+        "1": {
+          "title": "Harmonization",
+          "id": 49,
+          "attr": {
+            "style": {}
+          }
+        },
+        "2": {
+          "title": "Pooling",
+          "id": 50,
+          "attr": {
+            "style": {}
+          }
+        }
+      },
+      "attr": {
+        "style": {}
+      }
+    },
+    "-12": {
+      "title": "Mica",
+      "id": 36,
+      "ideas": {
+        "1": {
+          "title": "Standardized study catalogue",
+          "id": 42,
+          "ideas": {
+            "1": {
+              "title": "Study design",
+              "id": 55,
+              "attr": {
+                "style": {}
+              }
+            },
+            "2": {
+              "title": "Populations",
+              "id": 59,
+              "attr": {
+                "style": {}
+              }
+            },
+            "3": {
+              "title": "Data Collection Events",
+              "id": 61,
+              "attr": {
+                "style": {}
+              }
+            }
+          },
+          "attr": {
+            "style": {}
+          }
+        },
+        "2": {
+          "title": "Data dictionary browsers",
+          "id": 44,
+          "attr": {
+            "style": {}
+          }
+        },
+        "3": {
+          "title": "Online data access request forms",
+          "id": 46,
+          "attr": {
+            "style": {}
+          }
+        },
+        "4": {
+          "title": "Communication tools",
+          "id": 48,
+          "ideas": {},
+          "attr": {
+            "style": {}
+          }
+        }
+      },
+      "attr": {
+        "style": {}
+      }
+    },
+    "0.5": {
+      "title": "Cohort Data Exposure Library",
+      "id": 31,
+      "ideas": {
+        "1": {
+          "title": "Mica",
+          "id": 32,
+          "attr": {
+            "style": {}
+          }
+        },
+        "2": {
+          "title": "Describe study",
+          "id": 34,
+          "attr": {
+            "style": {}
+          }
+        },
+        "3": {
+          "title": "Expose study dataset",
+          "id": 35,
+          "attr": {
+            "style": {}
+          }
+        }
+      },
+      "attr": {
+        "style": {},
+        "position": [
+          47.5,
+          -133.5,
+          1
+        ]
+      }
+    }
+  },
+  "links": [],
+  "attr": {
+    "storyboards": [
+      "Storyboard 1"
+    ],
+    "style": {}
+  }
+}

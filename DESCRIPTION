@@ -1,0 +1,10 @@
+Package: slides
+Type: Package
+Title: Slides
+Version: 0.1.0
+Author: Xavier Duran
+Maintainer: Xavier Duran <xadual@gmail.com>
+Description: Slides
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
